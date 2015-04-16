@@ -1,0 +1,86 @@
+-- Addition --
+This network adds two inputs with two communication channels into the same population. The ‘addition’ is a description of neural firing in the decoded space. Addition is thus somewhat ‘free’, since the incoming currents from different synaptic connections interact linearly. 
+
+-- Controlled Oscillator -- 
+This network implements a controlled two-dimensional oscillator, which functionally the analogous to the controlled integrator, but in a 2-D space. Its behavior maps directly to the differential equation used to describe a simple harmonic oscillator (i.e. dx/dt = Ax(t) + Bu(t) where A = [0 freq; -freq, 0]).
+
+-- Learn Communication --
+The network learns the same circuit constructed in another network(the Communication Channel). The particular connection that is learned is the one between the ‘pre’ and ‘post’ populations. This particular learning rule is a kind of modulated Hebb-like learning (see Bekolay, 2011)
+
+-- Learn Square --
+The network a nonlinear function of a vector. The set up of this network is very similar to the 'Learn Communication' demo. The main difference is that this demo works in a 2D vector space (instead of a scalar), and that it is learning to compute a nonlinear function (the element-wise square) of its input.
+
+
+好像这些例子就是一些通用的概念性的例子，没有specific的文章，要说引用的话可以用"Eliasmith C. How to build a brain[J]. 2013."这本书。
+
+
+=== nengo官网介绍 === 
+
+Addition:
+
+Purpose: This demo shows how to construct a network that adds two inputs.
+
+Comments: Essentially, this is two communication channels into the same population. Addition is thus somewhat ‘free’, since the incoming currents from different synaptic connections interact linearly (though two inputs don’t have to combine in this way: see the combining demo).
+
+Usage: Grab the slider controls and move them up and down to see the effects of increasing or decreasing input. The C population represents the sum of A and B representations. Note that the ‘addition’ is a description of neural firing in the decoded space. Neurons don’t just add all the incoming spikes (the NEF has determined appropriate connection weights to make the result in C interpretable (i.e., decodable) as the sum of A and B).
+
+Output: See the screen capture below
+
+
+
+
+
+Controlled Oscillator:
+
+Purpose: This demo implements a controlled two-dimensional oscillator. 
+
+Comments: This is functionally the analogous to the controlled integrator, but in a 2-D space. The available slider allows the frequency to be directly controlled, to be negative or positive. This behavior maps directly to the differential equation used to describe a simple harmonic oscillator (i.e. dx/dt = Ax(t) + Bu(t) where A = [0 freq; -freq, 0]). The control in this circuit changes the freq variable in that equation.
+
+Usage: When you run this demo, it will automatically put in a step function on the input to start the oscillator moving. You can see where it is in phase space in the XY plot (if you want to see that over time, right-click on the Oscillator population and select X->value). You can change the frequency of rotation by moving the visible slider. Positive values rotate clockwise and negative values counter-clockwise.
+
+Output: See the screen capture below
+
+
+
+
+
+
+Learning Communicate:
+
+Purpose: This is the first demo showing learning in Nengo. It learns the same circuit constructed in the Communication Channel demo.
+
+Comments: The particular connection that is learned is the one between the ‘pre’ and ‘post’ populations. This particular learning rule is a kind of modulated Hebb-like learning (see Bekolay, 2011 for details).
+
+Note: The red and blue graph is a plot of the connection weights, which you can watch change as learning occurs (you may need to zoom in with the scroll wheel; the learning a square demo has a good example). Typtically, the largest changes occur at the beginning of a simulation. Red indicates negative weights and blue positive weights.
+
+Usage: When you run the network, it automatically has a random white noise input injected into it. So the input slider moves up and down randomly. However, learning is turned off, so there is little correlation between the representation of the pre and post populations.
+
+Turn learning on: To allow the learning rule to work, you need to move the ‘switch’ to +1. Because the learning rule is modulated by an error signal, if the error is zero, the weights won’t change. Once learning is on, the post will begin to track the pre.
+
+Monitor the error: When the switch is 0 at the beginning of the simulation, there is no ‘error’, though there is an ‘actual error’. The difference here is that ‘error’ is calculated by a neural population, and used by the learning rule, while ‘actual error’ is computed mathematically and is just for information.
+
+Repeat the experiment: After a few simulated seconds, the post and pre will match well. You can hit the ‘reset’ button (bottom left) and the weights will be reset to their original random values, and the switch will go to zero. For a different random starting point, you need to re-run the script.
+
+Output: See the screen capture below.
+
+
+
+
+
+learn square
+Purpose: This is demo shows learning a nonlinear function of a vector.
+
+Comments: The set up here is very similar to the Learning a Communication Channel demo. The main difference is that this demo works in a 2D vector space (instead of a scalar), and that it is learning to compute a nonlinear function (the element-wise square) of its input.
+
+Usage: When you run the network, it automatically has a random white noise input injected into it in both dimensions.
+
+Turn learning on: To allow the learning rule to work, you need to move the ‘switch’ to +1.
+
+Monitor the error: When the simulation starts and learning is on, the error is high. The average error slowly begins to decrease as the simulation continues. After 15s or so of simulation, it will do a reasonable job of computing the square, and the error in both dimensions should be quite small.
+
+Is it working? To see if the right function is being computed, compare the ‘pre’ and ‘post’ population value graphs. You should note that ‘post’ looks kind of like an absolute value of ‘pre’, the ‘post’ will be a bit squashed. You can also check that both graphs of either dimension should hit zero at about the same time.
+
+Output: See the screen capture below.
+
+
+
