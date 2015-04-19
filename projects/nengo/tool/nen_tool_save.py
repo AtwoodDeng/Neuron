@@ -52,7 +52,7 @@ class NengoAnalyzer:
 	"""
 	def analyze_network(self):
 		self.__DICT__ = dict()
-		c = self._analyze_network_(self.network.network,0,__ROOT__)
+		c = self._analyze_network_(self.network.network,0,__ROOT__+__SPLIT__)
 
 	def _analyze_network_(self,net,count,prefix):
 		# initilize the counter
@@ -62,19 +62,19 @@ class NengoAnalyzer:
 		for n in net.getNodes():
 			if isinstance( n , ca.nengo.model.impl.EnsembleImpl) :
 				for m in range(len(n.nodes)):
-					self.__DICT__[prefix+__SPLIT__+n.name+__SPLIT__+n.nodes[m].name] = __COUNT__
+					self.__DICT__[prefix+n.name+__SPLIT__+n.nodes[m].name] = __COUNT__
 					__COUNT__ = __COUNT__ + 1
 
 			elif isinstance( n , ca.nengo.model.impl.FunctionInput) :
 				for f in range(len(n.functions)):
-					self.__DICT__[prefix+__SPLIT__+n.name+__SPLIT__+str(f)] = __COUNT__
+					self.__DICT__[prefix+n.name+__SPLIT__+str(f)] = __COUNT__
 					__COUNT__ = __COUNT__ + 1
 
 			elif isinstance( n ,ca.nengo.model.impl.NetworkImpl):
-				__COUNT__ = self._analyze_network_(n,__COUNT__,prefix+__SPLIT__+n.name)
+				__COUNT__ = self._analyze_network_(n,__COUNT__,prefix+n.name+__SPLIT__)
 			else:
 				'=== print found a none type node ' , n.__class__
-				self.__DICT__[prefix+__SPLIT__+n.name] = __COUNT__
+				self.__DICT__[prefix+n.name] = __COUNT__
 				__COUNT__ = __COUNT__ + 1
 
 		return __COUNT__
@@ -143,7 +143,7 @@ class NengoAnalyzer:
 
 		open(self.get_filename_node(),'w').close()
 		fout = open(self.get_filename_node() , 'w+')
-		self._print_nodes_(self.network.network,fout,__ROOT__)
+		self._print_nodes_(self.network.network,fout,__ROOT__+__SPLIT__)
 		fout.close()
 
 	def _print_nodes_(self,net,fout_,prefix):
@@ -160,7 +160,7 @@ class NengoAnalyzer:
 			if isinstance( n , ca.nengo.model.impl.EnsembleImpl) :
 				print '  [node]',n.name
 				for m in n.nodes:
-					global_id = str(self.__DICT__[prefix+__SPLIT__+n.name+__SPLIT__+m.name])
+					global_id = str(self.__DICT__[prefix+n.name+__SPLIT__+m.name])
 					element_type = 'neuron'
 					model = str(m.generator.__class__)
 					V_reset = ''
@@ -206,7 +206,7 @@ class NengoAnalyzer:
 
 
 				for func in range(len(n.functions)):
-					global_id = str(self.__DICT__[prefix+__SPLIT__+n.name+__SPLIT__+str(func)])
+					str(self.__DICT__[prefix+n.name+__SPLIT__+str(func)])
 					if isinstance( n.functions[func] , ca.nengo.math.impl.ConstantFunction):
 
 						model = 'dc_generator'
@@ -243,9 +243,7 @@ class NengoAnalyzer:
 						# for test add a '0.0' in the amplitude culumn
 			elif isinstance( n , ca.nengo.model.impl.NetworkImpl ):
 				print '  [node]',n.name
-				self._print_nodes_(n,fout,prefix+__SPLIT__+n.name)
-			else:
-				print ' unexpected node type' , n.__class__
+				self._print_nodes_(n,fout,prefix+n.name+__SPLIT__)
 
 
 		if not fout_:
@@ -260,41 +258,41 @@ class NengoAnalyzer:
 	"""
 	def print_edges(self):
 		open(self.get_filename_edge(),'w').close()
-		self._print_edges_(self.network.network,__ROOT__)
+		self._print_edges_(self.network.network,__ROOT__+__SPLIT__)
 
 	def get_origin_node_list(self,origin,prefix):
 		result = []
 		if isinstance(origin , ca.nengo.model.impl.NetworkImpl.OriginWrapper):
 			if not(isinstance(origin.wrappedOrigin,ca.nengo.model.impl.NetworkArrayImpl.ArrayOrigin) \
 				or isinstance(origin.wrappedOrigin,ca.nengo.model.impl.NetworkImpl.OriginWrapper)):
-				prefix = prefix+__SPLIT__+origin.node.name
+				prefix = prefix+origin.node.name+__SPLIT__
 			result.extend(self.get_origin_node_list(origin.wrappedOrigin,prefix))
 		elif isinstance(origin , ca.nengo.model.impl.NetworkArrayImpl.ArrayOrigin):
 			for _origin in origin.nodeOrigins:
-				result.extend(self.get_origin_node_list(_origin,prefix+__SPLIT__+origin.node.name))
+				result.extend(self.get_origin_node_list(_origin,prefix+origin.node.name+__SPLIT__))
 		elif isinstance(origin , ca.nengo.model.nef.impl.DecodedOrigin):
 			if isinstance( origin.node , ca.nengo.model.impl.FunctionInput):
 				for f in range(len(origin.node.functions)):
-					result.append(self.__DICT__[prefix+__SPLIT__+origin.node.name+__SPLIT__+str(f)])
+					result.append(self.__DICT__[prefix+origin.node.name+__SPLIT__+str(f)])
 			elif isinstance(origin.node , ca.nengo.model.impl.EnsembleImpl):
 				n = origin.node
 				for m in n.nodes:
-					result.append(self.__DICT__[prefix+__SPLIT__+n.name+__SPLIT__+m.name])
+					result.append(self.__DICT__[prefix+n.name+__SPLIT__+m.name])
 			else:
 				print '==== origin node', origin.__class__ , ' type error ===' , origin.node.__class__
 		elif isinstance(origin , ca.nengo.model.impl.BasicOrigin):
 			if isinstance( origin.node , ca.nengo.model.impl.FunctionInput):
 				for f in range(len(origin.node.functions)):
-					result.append(self.__DICT__[prefix+__SPLIT__+origin.node.name+__SPLIT__+str(f)])
+					result.append(self.__DICT__[prefix+origin.node.name+__SPLIT__+str(f)])
 			else:
-				result.extend([self.__DICT__[prefix+__SPLIT__+origin.node.name]])
+				result.extend([self.__DICT__[prefix+origin.node.name]])
 				print '==== origin node', origin.__class__ , ' type error ===' , origin.node.__class__
 		elif isinstance(origin , nef.simplenode.SimpleOrigin):
 			if isinstance( origin.node , ca.nengo.model.impl.FunctionInput):
 				for f in range(len(origin.node.functions)):
-					result.append(self.__DICT__[prefix+__SPLIT__+origin.node.name+__SPLIT__+str(f)])
+					result.append(self.__DICT__[prefix+origin.node.name+__SPLIT__+str(f)])
 			else:
-				result.extend([self.__DICT__[prefix+__SPLIT__+origin.node.name]])
+				result.extend([self.__DICT__[prefix+origin.node.name]])
 				print '==== origin node', origin.__class__ , ' type error ===' , origin.node.__class__
 		else:
 			print '==== origin type error ===' , origin.__class__
@@ -307,27 +305,27 @@ class NengoAnalyzer:
 		if isinstance( termination , ca.nengo.model.impl.NetworkImpl.TerminationWrapper):
 			if not(isinstance(termination.wrappedTermination,ca.nengo.model.impl.EnsembleTermination)\
 				or isinstance(termination.wrappedTermination,ca.nengo.model.impl.NetworkImpl.TerminationWrapper)):
-				prefix = prefix+__SPLIT__+termination.node.name
+				prefix = prefix+termination.node.name+__SPLIT__
 			result.extend(self.get_termination_node_list(termination.wrappedTermination,prefix))
 		elif isinstance( termination , ca.nengo.model.impl.EnsembleTermination):
 			for _term in termination.nodeTerminations:
-				result.extend(self.get_termination_node_list(_term,prefix+__SPLIT__+termination.node.name))
+				result.extend(self.get_termination_node_list(_term,prefix+termination.node.name+__SPLIT__))
 		elif isinstance( termination , ca.nengo.model.nef.impl.DecodedTermination):
 			if isinstance(termination.node , ca.nengo.model.impl.FunctionInput):
-				result.extend([self.__DICT__[prefix+__SPLIT__+termination.node.name]])
+				result.extend([self.__DICT__[prefix+termination.node.name]])
 			elif isinstance( termination.node , ca.nengo.model.impl.EnsembleImpl):
 				n = termination.node
 				for m in n.nodes:
-					result.append(self.__DICT__[prefix+__SPLIT__+n.name+__SPLIT__+m.name])
+					result.append(self.__DICT__[prefix+n.name+__SPLIT__+m.name])
 			else:
 				print '==== termination node type error ===' , termination.node.__class__
 		elif isinstance( termination , nef.simplenode.SimpleTermination ):
-			result.append(self.__DICT__[prefix+__SPLIT__+termination.node.name])
+			result.append(self.__DICT__[prefix+termination.node.name])
 		elif isinstance( termination , ca.nengo.model.impl.LinearExponentialTermination):
-			result.append(self.__DICT__[prefix+__SPLIT__+termination.node.name])
+			result.append(self.__DICT__[prefix+termination.node.name])
 		else:
 			print '==== termination type error ===' , termination.__class__
-			result.append(self.__DICT__[prefix+__SPLIT__+termination.node.name])
+			result.append(self.__DICT__[prefix+termination.node.name])
 		return result
 
 	def _print_edges_(self,net,prefix):
@@ -504,10 +502,10 @@ class NengoAnalyzer:
 	def _add_log_(self,net,prefix):
 		for n in net.getNodes():
 			if isinstance(n,ca.nengo.model.impl.EnsembleImpl):
-				print 'add to log ', prefix+__SPLIT__+n.name
-				self.log.add_spikes(prefix+__SPLIT__+n.name,name=prefix+__SPLIT__+n.name)
+				print 'add to log ', prefix+n.name
+				self.log.add_spikes(prefix+n.name,name=prefix+n.name)
 			if isinstance(n,ca.nengo.model.impl.NetworkImpl):
-				self._add_log_(n,prefix+__SPLIT__+n.name)
+				self._add_log_(n,prefix+n.name+__SPLIT__)
 
 	"""
 	 function:
